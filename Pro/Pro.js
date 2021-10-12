@@ -3,7 +3,8 @@ import {css} from './css.js';
 function getKey(str){
     let string = str.toString();
     let res = {};
-
+    string = (string.split('return')[1]);
+    string = (string.split('}')[0]);
     res.class = string.match(/class:(.*)/);
     if(res.class != null){
 
@@ -28,7 +29,7 @@ function getKey(str){
                                 .replace(/id:/g ,'#')
     }
 
-    //console.log(res); 
+     
     
     if(res.id){
         return res.id
@@ -50,7 +51,7 @@ export function FirstUpperCase(str) {
 }
 export class Component {
     
-    constructor({state={},template,styles,onMount = ()=>{}}){
+    constructor({state={},template,styles}){
     // console.time('constructor')
 
         this.template = template;
@@ -60,7 +61,7 @@ export class Component {
         this.render = 0;
         this.mount = 0;
         this.component =[];
-
+       
     // this.styles
         if(this.styles != {} || this.styles != undefined){
             if(document.querySelector('#styles-global')){
@@ -134,9 +135,17 @@ export class Component {
     } 
 
     setState(key,value){
+        //console.log('componente a renderizar >>>>',this.key);
+        //console.log('componente no reutilizado >>>>',this.component.length <= 1);
+        //console.log('evento viene de otro componente >>>>',this.key != event.target.getAttribute('key') );
+        //console.log('parametros pasados por evento >>>>',event.detail);
+       // console.log('target evento >>>>',event.target);
+        
+        const distintoComponente = (this.key != event.target.getAttribute('key') && this.component.length <= 1)
     //console.time('upload')
-    //console.log(event.target);
-            if(event != null){
+            if(distintoComponente){
+                this.refDom = document.querySelector(this.key);
+            }else if(event != null){
                 let key = event.target.getAttribute('key');
     //console.log(key);
                 this.refDom = document.querySelector(key);
@@ -171,8 +180,16 @@ export class Component {
     //console.log('actualizando componente:',this.key);
     //console.timeEnd('upload')
     }
+
 }
 export const onMount = (callback,component)=>{
     if(!component && callback) callback();
     if(component && component.render == 0 && callback) callback();
+}
+export const sendEvent = (e,name,detail)=>{
+    
+    e.target.dispatchEvent(new CustomEvent(name, {
+        bubbles: true,
+        detail,
+      }))
 }

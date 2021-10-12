@@ -2,7 +2,6 @@ export default (function HtmlComponents(){
 
     window.createElement = (type,props,...children)=>{
 
-        let shadow=false
         const element = document.createElement(type);
 
          if(element != null){
@@ -57,8 +56,17 @@ export default (function HtmlComponents(){
                                 styles.innerHTML += styleRule;
                             }
                         }
-                    }
-                    else{
+                    }else if (prop === 'events'){
+                        const events = props[prop];
+                        for(let item of events){
+                            element.addEventListener(item.name,item.handle);
+                        }
+
+                        element.setAttribute('key',element.getAttribute('id')||element.getAttribute('class'))
+                    }else if(prop === 'dispatch'){
+                        const {name , detail} = props[prop];
+                        element.dispatchEvent(new CustomEvent(name,detail));
+                    }else{
                         element.setAttribute(prop,props[prop]);
                     }
                     if(evento) element.setAttribute('evento',evento)
@@ -141,22 +149,31 @@ export default (function HtmlComponents(){
        }
        return body
     }
-    window.generateText = (props,data,propertyIsVisible)=>{
-        console.log(data);
+    window.generateList = (props,data)=>{
+        //props custom
+        const propsParent = {};
+                propsParent.class = props.classParent || '';
+                (props.classParent)? delete props.classParent : false;
+        const type = props.type || 'p';
+        const visibleKey = props.visibleKey || false; 
+        const ignoreValue = props.ignoreValue || [];
+
         if(isArray){
             let text=[];
             for(let item in data){
-                if(propertyIsVisible){
-                    text.push(Text(props,item))
-                    text.push(Text(props,data[item]))
-                }else{
+
                     if(typeof data[item] === 'object')
                     {
-                        text.push(...generateText(props,data[item]))
+                        text.push(Div(propsParent,...generateList(props,data[item])))
                     }else{
-                        text.push(Text(props,data[item]))
+                        if(!ignoreValue.includes(item)){
+                            
+                            if(visibleKey) text.push(createElement('label',props,item))
+                            if(props.type && props.type === 'input') props.value = data[item];
+                            text.push(createElement(type,props,data[item]))
+                        }
                     }
-                }
+                
             }
             return text;
             
@@ -187,7 +204,7 @@ export default (function HtmlComponents(){
             }
         }
     })
-    Array.prototype.search = function(param){
+    /*Array.prototype.search = function(param){
         const datos = this;
         if(datos && typeof datos === 'object' && datos[0]){
             param = param.toLowerCase();
@@ -207,7 +224,7 @@ export default (function HtmlComponents(){
         }else{
             console.log('no es un array');
         }
-    }
+    }*/
     window.isArray = (param)=>{
         if(param 
             && typeof param === 'object' 

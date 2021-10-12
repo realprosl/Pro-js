@@ -21,6 +21,8 @@ export const css = (styles)=>{
 
             }
         }
-        return ` ${styles.hover} ${styles.desk} ${styles.tablet} ${styles.mobile}`
+        let res = ` ${styles.hover} ${styles.desk} ${styles.tablet} ${styles.mobile}`
+            res = res.replace(/undefined/g,'');
+        return res;
     }
 }
